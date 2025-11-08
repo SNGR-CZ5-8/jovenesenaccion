@@ -147,7 +147,7 @@
             opacity: 0.9;
         }
 
-        /* --- ESTILOS DEL MODAL --- */
+        /* --- ESTILOS DEL MODAL (¡Estos son los importantes!) --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -165,9 +165,9 @@
         .modal-content {
             background: var(--color-tarjeta);
             border-radius: 8px;
-            /* /* NUEVO */ */
+            /*/* NUEVO: Más ancho para 2 columnas */*/
             width: 100%;
-            max-width: 700px; /* Más ancho para dos columnas */
+            max-width: 700px; 
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             position: relative;
         }
@@ -185,7 +185,7 @@
         }
         #modalClose:hover { color: #333; }
         
-        /* /* NUEVO: Estilos para el Título del Modal */ */
+        /*/* NUEVO: Título del Modal */*/
         #modalTitle {
             margin: 0;
             padding: 1.5rem 2rem;
@@ -195,22 +195,22 @@
             border-bottom: 1px solid var(--color-borde);
         }
         
-        /* /* NUEVO: Estructura de GRID para el cuerpo del modal */ */
+        /*/* NUEVO: Grid para el cuerpo del modal */*/
         .modal-body-grid {
             display: grid;
-            grid-template-columns: 1fr; /* 1 columna por defecto en móviles */
+            grid-template-columns: 1fr; /* 1 columna en móviles */
             gap: 1.5rem;
             padding: 2rem;
         }
 
-        /* /* NUEVO: A las 2 columnas en pantallas más grandes */ */
+        /*/* NUEVO: 2 columnas en pantallas grandes */*/
         @media (min-width: 600px) {
             .modal-body-grid {
                 grid-template-columns: 1fr 1fr; /* 2 columnas */
             }
         }
         
-        /* /* NUEVO: Estilo para cada par de datos (Etiqueta + Valor) */ */
+        /*/* NUEVO: Estilo para cada par (Etiqueta + Valor) */*/
         .data-pair {
             line-height: 1.6;
             font-size: 0.95rem;
