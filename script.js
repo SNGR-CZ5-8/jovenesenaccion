@@ -2,134 +2,217 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyhoY_XIO7WXtr_9EI5o84UMstYUcq2UnE6hExOTxcn5b8ZMhgCax2TZnKbvjR2SDA/exec"; // Asegúrate que esta URL esté correcta
 
 
-// --- PASO 2: OBTENER ELEMENTOS DEL HTML ---
+// --- DOM ---
 const searchButton = document.getElementById('searchButton');
-const searchInput = document.getElementById('searchInput');
+const searchInput  = document.getElementById('searchInput');
 const resultsContainer = document.getElementById('resultsContainer');
 const loader = document.getElementById('loader');
+const helperText = document.getElementById('helperText');
+
 const modalOverlay = document.getElementById('modalOverlay');
-const modalBody = document.getElementById('modalBody');
-const modalClose = document.getElementById('modalClose');
-const modalTitle = document.getElementById('modalTitle'); // <--- Importante
+const modalClose   = document.getElementById('modalClose');
+const modalClose2  = document.getElementById('modalClose2');
+const modalTitle   = document.getElementById('modalTitle');
+const modalBody    = document.getElementById('modalDesc');
+const modalAvatar  = document.getElementById('modalAvatar');
+
 let currentResultsData = [];
+let lastFocusedElement = null;
 
+// Helpers
+const qs = (sel, ctx=document) => ctx.querySelector(sel);
+const qsa = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
+const safe = (v) => (v ?? '').toString().trim() || 'N/A';
 
-// --- PASO 3: LÓGICA DE BÚSQUEDA (No cambia) ---
-searchButton.addEventListener('click', () => {
-    const query = searchInput.value.trim();
-    if (query === "") {
-        alert("Por favor, escribe un término de búsqueda (cédula, nombre o apellido).");
+function currentCriterion(){
+  return (qs('input[name="crit"]:checked')?.value) || 'cedula';
+}
+
+function placeholderByCriterion(){
+  const c = currentCriterion();
+  if (c === 'apellidos') return "Ej.: 'Quilumba'";
+  if (c === 'nombres')   return "Ej.: 'Karoly'";
+  return "Ej.: 1753631652";
+}
+
+qsa('input[name="crit"]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    searchInput.placeholder = placeholderByCriterion();
+    searchInput.focus();
+  });
+});
+searchInput.placeholder = placeholderByCriterion();
+
+// Buscar
+function performSearch(){
+  const query = searchInput.value.trim();
+  const criterio = currentCriterion();
+
+  if (!query){
+    alert("Escribe un término de búsqueda.");
+    searchInput.focus();
+    return;
+  }
+
+  loader.style.display = 'block';
+  resultsContainer.innerHTML = '';
+  currentResultsData = [];
+
+  // Nota: mantenemos el parámetro original "buscar" para no romper tu backend.
+  // Enviamos además "criterio" por si tu App Script lo aprovecha.
+  const url = `${API_URL}?buscar=${encodeURIComponent(query)}&criterio=${encodeURIComponent(criterio)}`;
+
+  fetch(url)
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP '+r.status)))
+    .then(data => {
+      loader.style.display = 'none';
+
+      if (!data || data.error){
+        showNoResults(data?.error ? `Error: ${data.error}` : 'Respuesta vacía de la API.');
         return;
-    }
+      }
+      if (!Array.isArray(data) || data.length === 0){
+        showNoResults(`No se encontraron resultados para "${query}".`);
+        return;
+      }
 
-    loader.style.display = 'block';
-    resultsContainer.innerHTML = ''; 
-    currentResultsData = []; 
-
-    const fullUrl = `${API_URL}?buscar=${encodeURIComponent(query)}`;
-
-    fetch(fullUrl)
-        .then(response => response.json())
-        .then(data => {
-            loader.style.display = 'none';
-            if (data.error) {
-                showNoResults(`Error: ${data.error}`);
-            } else if (data.length === 0) {
-                showNoResults(`No se encontraron resultados para "${query}".`);
-            } else {
-                currentResultsData = data;
-                data.forEach((participante, index) => {
-                    const item = document.createElement('li');
-                    item.className = 'result-item';
-                    let nombreMostrado = `${participante.nombres || ''} ${participante.apellidos || ''}`.trim();
-                    if (!nombreMostrado) {
-                        nombreMostrado = `Cédula: ${participante.cedula || 'Sin Identificación'}`;
-                    }
-                    item.textContent = nombreMostrado;
-                    item.dataset.index = index; 
-                    item.addEventListener('click', () => openModal(index));
-                    resultsContainer.appendChild(item);
-                });
-            }
-        })
-        .catch(error => {
-            loader.style.display = 'none';
-            showNoResults('Error de conexión. Revisa tu internet e intenta de nuevo.');
-            console.error('Error en fetch:', error);
-        });
-});
-
-
-// --- PASO 4: LÓGICA DEL MODAL (¡LA PARTE IMPORTANTE!) ---
-
-function openModal(index) {
-    const p = currentResultsData[index];
-    
-    // Limpiar el cuerpo del modal
-    modalBody.innerHTML = '';
-    
-    // 1. Poner el Título en el h3
-    modalTitle.textContent = `${p.nombres || ''} ${p.apellidos || ''}`.trim();
-    
-    // 2. Crear las dos columnas
-    const col1 = document.createElement('div');
-    col1.className = 'modal-col-1';
-    
-    const col2 = document.createElement('div');
-    col2.className = 'modal-col-2';
-
-    // 3. Función ayudante para el NUEVO formato (Etiqueta arriba, valor abajo)
-    const crearFila = (etiqueta, valor) => {
-        const div = document.createElement('div');
-        div.className = 'data-pair'; // <-- Usa la clase CSS
-        
-        const strong = document.createElement('strong');
-        strong.textContent = etiqueta + ":";
-        
-        const span = document.createElement('span');
-        span.textContent = valor || 'N/A';
-        
-        div.appendChild(strong);
-        div.appendChild(span);
-        return div;
-    };
-
-    // 4. Llenar Columna 1: Datos Personales
-    col1.appendChild(crearFila("Cédula", p.cedula));
-    col1.appendChild(crearFila("Apellidos", p.apellidos));
-    col1.appendChild(crearFila("Nombres", p.nombres));
-    col1.appendChild(crearFila("Sexo", p.sexo));
-    col1.appendChild(crearFila("Celular", p.celular));
-    col1.appendChild(crearFila("Correo", p.correo));
-
-    // 5. Llenar Columna 2: Ubicación y Actividad
-    col2.appendChild(crearFila("Provincia", p.provincia));
-    col2.appendChild(crearFila("Ciudad", p.ciudad));
-    col2.appendChild(crearFila("Parroquia", p.parroquia));
-    col2.appendChild(crearFila("Dirección", p.direccion));
-    col2.appendChild(crearFila("Actividad General", p.actividades_general)); // Con 'a'
-    col2.appendChild(crearFila("Actividad Específica", p.actividades_especificas));
-    
-    // 6. Añadir las columnas al cuerpo del modal (que es el grid)
-    modalBody.appendChild(col1);
-    modalBody.appendChild(col2);
-    
-    // 7. Mostrar el modal
-    modalOverlay.style.display = 'flex';
+      currentResultsData = data;
+      renderResults(data, query);
+    })
+    .catch(err=>{
+      console.error('Error en fetch:', err);
+      loader.style.display = 'none';
+      showNoResults('Error de conexión. Verifica tu internet e inténtalo de nuevo.');
+    });
 }
 
-function closeModal() {
-    modalOverlay.style.display = 'none';
+function showNoResults(msg){
+  resultsContainer.innerHTML = `<li class="no-results">${msg}</li>`;
 }
 
-// --- PASO 5: EVENTOS (No cambia) ---
+function initialsFrom(nombres, apellidos){
+  const A = safe(apellidos).split(' ')[0]?.[0] || '';
+  const N = safe(nombres).split(' ')[0]?.[0] || '';
+  const ii = (N + A).toUpperCase().slice(0,2);
+  return ii || 'SN';
+}
+
+function highlight(text, term){
+  if (!text || !term) return safe(text);
+  const t = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${t})`, 'ig');
+  return safe(text).replace(re, '<mark>$1</mark>');
+}
+
+function renderResults(list, needle){
+  resultsContainer.innerHTML = '';
+  list.forEach((p, idx)=>{
+    const nombre = `${safe(p.nombres)} ${safe(p.apellidos)}`.trim();
+    const cedula = safe(p.cedula);
+    const provincia = safe(p.provincia);
+    const ciudad = safe(p.ciudad);
+
+    const li = document.createElement('li');
+    li.className = 'item';
+    li.tabIndex = 0;
+    li.setAttribute('role','button');
+    li.setAttribute('aria-label', `Abrir detalle de ${nombre || 'participante'}`);
+
+    li.innerHTML = `
+      <div class="i-main">
+        <div class="avatar">${initialsFrom(p.nombres, p.apellidos)}</div>
+        <div class="i-text">
+          <div class="i-name">${highlight(nombre || '(Sin nombre)', needle)}</div>
+          <div class="i-sub">Cédula: ${highlight(cedula, needle)}</div>
+          <div class="i-sub">${[provincia, ciudad].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>
+      <span class="badge">Ver detalle</span>
+    `;
+
+    li.addEventListener('click', ()=>openModal(idx, li));
+    li.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openModal(idx, li);} });
+    resultsContainer.appendChild(li);
+  });
+}
+
+// Modal
+function openModal(index, originEl=null){
+  const p = currentResultsData[index];
+  if (!p) return;
+
+  lastFocusedElement = originEl || document.activeElement;
+
+  modalTitle.textContent = `${safe(p.nombres)} ${safe(p.apellidos)}`.trim() || 'Participante';
+  modalAvatar.textContent = initialsFrom(p.nombres, p.apellidos);
+
+  modalBody.innerHTML = '';
+
+  const col1 = document.createElement('div');
+  const col2 = document.createElement('div');
+
+  const pair = (label, value) => {
+    const d = document.createElement('div');
+    d.className = 'pair';
+    d.innerHTML = `<strong>${label}</strong><span>${safe(value)}</span>`;
+    return d;
+  };
+
+  // Columna 1: Datos
+  col1.appendChild(pair('Cédula', p.cedula));
+  col1.appendChild(pair('Apellidos', p.apellidos));
+  col1.appendChild(pair('Nombres', p.nombres));
+  col1.appendChild(pair('Sexo', p.sexo));
+  col1.appendChild(pair('Celular', p.celular));
+  col1.appendChild(pair('Correo', p.correo));
+
+  // Columna 2: Ubicación / Actividad
+  col2.appendChild(pair('Provincia', p.provincia));
+  col2.appendChild(pair('Ciudad', p.ciudad));
+  col2.appendChild(pair('Parroquia', p.parroquia));
+  col2.appendChild(pair('Dirección', p.direccion));
+  col2.appendChild(pair('Actividad General', p.actividades_general));
+  col2.appendChild(pair('Actividad Específica', p.actividades_especificas));
+
+  modalBody.appendChild(col1);
+  modalBody.appendChild(col2);
+
+  // Mostrar
+  modalOverlay.classList.add('show');
+  // Enfocar el botón cerrar para accesibilidad
+  modalClose.focus();
+
+  // Trap de foco simple
+  document.addEventListener('keydown', handleModalKeys);
+  modalOverlay.addEventListener('click', clickOutsideToClose);
+}
+
+function closeModal(){
+  modalOverlay.classList.remove('show');
+  document.removeEventListener('keydown', handleModalKeys);
+  modalOverlay.removeEventListener('click', clickOutsideToClose);
+
+  // devolver el foco
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function'){
+    lastFocusedElement.focus();
+  }
+}
+
+function handleModalKeys(e){
+  if (e.key === 'Escape'){ closeModal(); }
+}
+
+function clickOutsideToClose(e){
+  // cierra si se hace click fuera del panel
+  if (e.target === modalOverlay){ closeModal(); }
+}
+
+// Eventos
+searchButton.addEventListener('click', performSearch);
+searchInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ performSearch(); }});
 modalClose.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (event) => {
-    if (event.target === modalOverlay) {
-        closeModal();
-    }
-});
+modalClose2.addEventListener('click', closeModal);
 
-function showNoResults(message) {
-    resultsContainer.innerHTML = `<li class="no-results">${message}</li>`;
-}
+// Hint dinámico
+searchInput.addEventListener('focus', ()=> helperText.textContent = 'Presiona Enter para buscar rápidamente.');
+searchInput.addEventListener('blur',  ()=> helperText.textContent = 'Presiona Enter para buscar rápidamente.');
