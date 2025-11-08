@@ -1,6 +1,5 @@
 // --- PASO 1: CONFIGURACIÓN ---
-// ¡¡IMPORTANTE!! Pega la URL de tu Google Apps Script aquí
-const API_URL = "https://script.google.com/macros/s/AKfycbyhoY_XIO7WXtr_9EI5o84UMstYUcq2UnE6hExOTxcn5b8ZMhgCax2TZnKbvjR2SDA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyhoY_XIO7WXtr_9EI5o84UMstYUcq2UnE6hExOTxcn5b8ZMhgCax2TZnKbvjR2SDA/exec"; // Asegúrate que esta URL esté correcta
 
 
 // --- PASO 2: OBTENER ELEMENTOS DEL HTML ---
@@ -11,10 +10,11 @@ const loader = document.getElementById('loader');
 const modalOverlay = document.getElementById('modalOverlay');
 const modalBody = document.getElementById('modalBody');
 const modalClose = document.getElementById('modalClose');
+const modalTitle = document.getElementById('modalTitle'); // <-- NUEVO
 let currentResultsData = [];
 
 
-// --- PASO 3: LÓGICA DE BÚSQUEDA ---
+// --- PASO 3: LÓGICA DE BÚSQUEDA (Sin cambios) ---
 searchButton.addEventListener('click', () => {
     const query = searchInput.value.trim();
     if (query === "") {
@@ -32,27 +32,20 @@ searchButton.addEventListener('click', () => {
         .then(response => response.json())
         .then(data => {
             loader.style.display = 'none';
-
             if (data.error) {
                 showNoResults(`Error: ${data.error}`);
             } else if (data.length === 0) {
                 showNoResults(`No se encontraron resultados para "${query}".`);
             } else {
                 currentResultsData = data;
-                
                 data.forEach((participante, index) => {
                     const item = document.createElement('li');
                     item.className = 'result-item';
-                    
-                    // --- CAMBIO AQUÍ ---
-                    // Ahora usamos las llaves limpias: 'nombres' y 'apellidos'
                     let nombreMostrado = `${participante.nombres || ''} ${participante.apellidos || ''}`.trim();
                     if (!nombreMostrado) {
-                        // Y 'cedula' como fallback
                         nombreMostrado = `Cédula: ${participante.cedula || 'Sin Identificación'}`;
                     }
                     item.textContent = nombreMostrado;
-                    
                     item.dataset.index = index; 
                     item.addEventListener('click', () => openModal(index));
                     resultsContainer.appendChild(item);
@@ -67,49 +60,69 @@ searchButton.addEventListener('click', () => {
 });
 
 
-// --- PASO 4: LÓGICA DEL MODAL ---
+// --- PASO 4: LÓGICA DEL MODAL (¡ACTUALIZADA!) ---
 
+/**
+ * Abre el modal y lo llena con los datos del participante
+ * @param {number} index - El índice del participante en el array 'currentResultsData'
+ */
 function openModal(index) {
     const p = currentResultsData[index];
+    
+    // Limpiar el cuerpo del modal
     modalBody.innerHTML = '';
     
-    // --- CAMBIO AQUÍ ---
-    // El objeto 'p' ahora tiene llaves limpias. 
-    // ej: p.cedula, p.actividades_general, p.direccion
+    // --- NUEVA LÓGICA DE 2 COLUMNAS ---
     
-    // Título
-    const titulo = document.createElement('h3');
-    titulo.textContent = `${p.nombres || ''} ${p.apellidos || ''}`.trim();
-    modalBody.appendChild(titulo);
+    // 1. Poner el Título
+    modalTitle.textContent = `${p.nombres || ''} ${p.apellidos || ''}`.trim();
     
+    // 2. Crear las columnas
+    const col1 = document.createElement('div');
+    col1.className = 'modal-col-1';
+    
+    const col2 = document.createElement('div');
+    col2.className = 'modal-col-2';
+
+    // 3. Función ayudante para crear el nuevo formato (Etiqueta arriba, valor abajo)
     const crearFila = (etiqueta, valor) => {
-        const pElement = document.createElement('p');
+        const div = document.createElement('div');
+        div.className = 'data-pair';
+        
         const strong = document.createElement('strong');
         strong.textContent = etiqueta + ":";
-        pElement.appendChild(strong);
-        pElement.appendChild(document.createTextNode(` ${valor || 'N/A'}`)); 
-        modalBody.appendChild(pElement);
+        
+        const span = document.createElement('span');
+        span.textContent = valor || 'N/A';
+        
+        div.appendChild(strong);
+        div.appendChild(span);
+        return div;
     };
 
-    // --- CAMBIO GRANDE AQUÍ ---
-    // Usamos las llaves normalizadas (minúsculas, sin tildes, con guion bajo)
-    // No importa si tu hoja dice "Cédula", "ACTIVIDADES GENERLAL" o "Dirección".
-    
-    crearFila("Cédula", p.cedula);
-    crearFila("Apellidos", p.apellidos);
-    crearFila("Nombres", p.nombres);
-    crearFila("Actividad General", p.actividades_general); // Corregido de tu tipeo
-    crearFila("Actividad Específica", p.actividades_especificas);
-    crearFila("Sexo", p.sexo);
-    crearFila("Provincia", p.provincia);
-    crearFila("Ciudad", p.ciudad);
-    crearFila("Parroquia", p.parroquia);
-    crearFila("Dirección", p.direccion);
-    crearFila("Celular", p.celular);
-    crearFila("Correo", p.correo);
-    
-    // --- FIN DEL CAMBIO ---
+    // 4. Llenar Columna 1: Datos Personales
+    col1.appendChild(crearFila("Cédula", p.cedula));
+    col1.appendChild(crearFila("Apellidos", p.apellidos));
+    col1.appendChild(crearFila("Nombres", p.nombres));
+    col1.appendChild(crearFila("Sexo", p.sexo));
+    col1.appendChild(crearFila("Celular", p.celular));
+    col1.appendChild(crearFila("Correo", p.correo));
 
+    // 5. Llenar Columna 2: Ubicación y Actividad
+    col2.appendChild(crearFila("Provincia", p.provincia));
+    col2.appendChild(crearFila("Ciudad", p.ciudad));
+    col2.appendChild(crearFila("Parroquia", p.parroquia));
+    col2.appendChild(crearFila("Dirección", p.direccion));
+    col2.appendChild(crearFila("Actividad General", p.actividades_general)); // Con la 'a' correcta
+    col2.appendChild(crearFila("Actividad Específica", p.actividades_especificas));
+    
+    // 6. Añadir las columnas al cuerpo del modal
+    modalBody.appendChild(col1);
+    modalBody.appendChild(col2);
+    
+    // --- FIN DE LA NUEVA LÓGICA ---
+
+    // 7. Mostrar el modal
     modalOverlay.style.display = 'flex';
 }
 
@@ -117,6 +130,7 @@ function closeModal() {
     modalOverlay.style.display = 'none';
 }
 
+// --- PASO 5: EVENTOS (Sin cambios) ---
 modalClose.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', (event) => {
     if (event.target === modalOverlay) {
