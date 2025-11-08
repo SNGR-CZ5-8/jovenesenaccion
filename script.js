@@ -98,7 +98,7 @@ function openModal(index) {
     crearFila("Cédula", p.cedula);
     crearFila("Apellidos", p.apellidos);
     crearFila("Nombres", p.nombres);
-    crearFila("Actividad General", p.actividades_generlal); // Corregido de tu tipeo
+    crearFila("Actividad General", p.actividades_general); // Corregido de tu tipeo
     crearFila("Actividad Específica", p.actividades_especificas);
     crearFila("Sexo", p.sexo);
     crearFila("Provincia", p.provincia);
