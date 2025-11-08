@@ -11,10 +11,8 @@
 
     <style>
         :root {
-            /* Color exacto proporcionado por ti */
             --color-principal: #2F338F; 
-            --color-principal-hover: #242870; /* Un tono más oscuro para hover */
-            
+            --color-principal-hover: #242870; 
             --color-fondo: #f0f2f5; 
             --color-tarjeta: #ffffff;
             --color-texto-principal: #212529;
@@ -33,38 +31,19 @@
             min-height: 100vh;
         }
 
-        /* --- Encabezado Estilo SNGRE --- */
+        /* --- Encabezado --- */
         .page-header {
             background-color: var(--color-principal);
             color: white;
             padding: 1.25rem 2rem;
             text-align: center;
         }
-        
-        /* Contenedor para el logo y títulos */
-        .header-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+        .header-content { max-width: 800px; margin: 0 auto; }
+        .header-logo-img { max-height: 60px; margin-bottom: 0.75rem; }
+        .header-title { font-size: 1.6rem; font-weight: 700; margin: 0; }
+        .header-subtitle { margin: 0.25rem 0 0 0; font-size: 0.95rem; opacity: 0.9; }
 
-        .header-logo-img {
-            max-height: 60px; /* Ajusta el tamaño del logo */
-            margin-bottom: 0.75rem;
-        }
-        
-        .header-title {
-            font-size: 1.6rem; /* Título un poco más grande */
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .header-subtitle {
-            margin: 0.25rem 0 0 0;
-            font-size: 0.95rem;
-            opacity: 0.9;
-        }
-
-        /* --- Contenedor Principal (Tarjeta Blanca) --- */
+        /* --- Contenido Principal --- */
         main {
             flex-grow: 1; 
             padding: 2rem;
@@ -72,7 +51,6 @@
             justify-content: center;
             align-items: flex-start;
         }
-        
         .container {
             width: 100%;
             max-width: 800px;
@@ -81,11 +59,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             border: 1px solid #e0e0e0;
         }
-
-        .card-body {
-            padding: 2.5rem;
-        }
-        
+        .card-body { padding: 2.5rem; }
         .card-body h2 {
             text-align: center;
             font-size: 1.75rem;
@@ -94,7 +68,6 @@
             margin-top: 0;
             margin-bottom: 0.5rem;
         }
-        
         .card-body .subtitle {
             text-align: center;
             font-size: 1rem;
@@ -102,18 +75,14 @@
             margin-bottom: 2.5rem;
         }
 
-        /* --- Formulario de Búsqueda --- */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
+        /* --- Formulario --- */
+        .form-group { margin-bottom: 1.5rem; }
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
             font-size: 0.9rem;
         }
-        
         #searchInput {
             width: 100%;
             padding: 12px 15px;
@@ -123,13 +92,11 @@
             border-radius: 4px;
             box-sizing: border-box; 
         }
-        
         #searchInput:focus {
             outline: none;
             border-color: var(--color-principal);
             box-shadow: 0 0 0 3px rgba(47, 51, 143, 0.2);
         }
-        
         #searchButton {
             width: 100%;
             padding: 12px 15px;
@@ -142,24 +109,11 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
+        #searchButton:hover { background-color: var(--color-principal-hover); }
+        hr { border: none; border-top: 1px solid #eee; margin: 2rem 0; }
         
-        #searchButton:hover {
-            background-color: var(--color-principal-hover); 
-        }
-        
-        hr {
-            border: none;
-            border-top: 1px solid #eee;
-            margin: 2rem 0;
-        }
-        
-        /* --- Resultados y Loader --- */
-        .results-header {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
+        /* --- Resultados --- */
+        .results-header { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; }
         .loader {
             width: 32px;
             height: 32px;
@@ -169,18 +123,8 @@
             margin: 2rem auto;
             animation: spin 0.8s linear infinite;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #resultsContainer {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #resultsContainer { list-style-type: none; padding: 0; margin: 0; }
         .result-item {
             font-size: 1rem;
             padding: 12px 15px;
@@ -190,19 +134,10 @@
             cursor: pointer;
             transition: background-color 0.2s, border-color 0.2s;
         }
-
-        .result-item:hover {
-            background-color: #f8f9fa;
-            border-color: var(--color-principal); 
-        }
-
-        .no-results {
-            text-align: center;
-            color: var(--color-texto-secundario);
-            padding: 1rem;
-        }
+        .result-item:hover { background-color: #f8f9fa; border-color: var(--color-principal); }
+        .no-results { text-align: center; color: var(--color-texto-secundario); padding: 1rem; }
         
-        /* --- Footer Estilo SNGRE --- */
+        /* --- Footer --- */
         .page-footer {
             background-color: var(--color-principal);
             color: white;
@@ -212,7 +147,7 @@
             opacity: 0.9;
         }
 
-        /* --- ESTRUCTURA DEL MODAL (Sin cambios) --- */
+        /* --- ESTILOS DEL MODAL --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -230,16 +165,16 @@
         .modal-content {
             background: var(--color-tarjeta);
             border-radius: 8px;
-            padding: 2.5rem;
+            /* /* NUEVO */ */
             width: 100%;
-            max-width: 500px;
+            max-width: 700px; /* Más ancho para dos columnas */
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             position: relative;
         }
-
+        
         #modalClose {
             position: absolute;
-            top: 15px;
+            top: 10px;
             right: 15px;
             background: transparent;
             border: none;
@@ -248,27 +183,49 @@
             cursor: pointer;
             line-height: 1;
         }
-        
         #modalClose:hover { color: #333; }
         
-        #modalBody h3 {
-            margin-top: 0;
+        /* /* NUEVO: Estilos para el Título del Modal */ */
+        #modalTitle {
+            margin: 0;
+            padding: 1.5rem 2rem;
             font-size: 1.5rem;
-            color: var(--color-principal); 
+            font-weight: 700;
+            color: var(--color-principal);
             border-bottom: 1px solid var(--color-borde);
-            padding-bottom: 0.5rem;
         }
         
-        #modalBody p {
-            font-size: 1rem;
-            line-height: 1.7;
+        /* /* NUEVO: Estructura de GRID para el cuerpo del modal */ */
+        .modal-body-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* 1 columna por defecto en móviles */
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        /* /* NUEVO: A las 2 columnas en pantallas más grandes */ */
+        @media (min-width: 600px) {
+            .modal-body-grid {
+                grid-template-columns: 1fr 1fr; /* 2 columnas */
+            }
+        }
+        
+        /* /* NUEVO: Estilo para cada par de datos (Etiqueta + Valor) */ */
+        .data-pair {
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .data-pair strong {
+            display: block; /* La etiqueta arriba */
+            font-weight: 700;
+            font-size: 0.85rem;
             color: var(--color-texto-secundario);
+            margin-bottom: 2px;
         }
         
-        #modalBody p strong {
-            color: var(--color-texto-principal);
-            min-width: 90px;
-            display: inline-block;
+        .data-pair span {
+            color: var(--color-texto-principal); /* El valor abajo */
         }
         
     </style>
@@ -288,15 +245,12 @@
             <div class="card-body">
                 <h2>Consulta de Participantes</h2>
                 <p class="subtitle">Ingrese la cédula, nombre o apellido del participante.</p>
-                
                 <div class="form-group">
                     <label for="searchInput">Término de búsqueda:</label>
                     <input type="text" id="searchInput" placeholder="Ej: 1234567890 o 'Ana Pérez'">
                 </div>
                 <button id="searchButton">Buscar Participante</button>
-                
                 <hr>
-                
                 <h3 class="results-header">Resultados</h3>
                 <div id="loader" class="loader" style="display: none;"></div>
                 <ul id="resultsContainer">
@@ -312,7 +266,10 @@
     <div id="modalOverlay" class="modal-overlay">
         <div class="modal-content">
             <button id="modalClose" title="Cerrar">&times;</button>
-            <div id="modalBody">
+            
+            <h3 id="modalTitle"></h3>
+            
+            <div id="modalBody" class="modal-body-grid">
                 </div>
         </div>
     </div>
