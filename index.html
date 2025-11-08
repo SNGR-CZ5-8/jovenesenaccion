@@ -3,101 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Participantes</title>
+    <title>Consulta de Participantes - Jóvenes en Acción</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
-        /* --- Variables de Color (fácil de cambiar) --- */
         :root {
-            --color-primario: #0056b3; /* Un azul corporativo */
-            --color-fondo: #f4f7f6;
+            /* Color exacto proporcionado por ti */
+            --color-principal: #2F338F; 
+            --color-principal-hover: #242870; /* Un tono más oscuro para hover */
+            
+            --color-fondo: #f0f2f5; 
             --color-tarjeta: #ffffff;
-            --color-sombra: rgba(0, 0, 0, 0.1);
-            --color-texto: #333333;
-            --color-borde: #dee2e6;
+            --color-texto-principal: #212529;
+            --color-texto-secundario: #495057;
+            --color-borde: #ced4da;
         }
 
-        /* --- Estilos Generales --- */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
             background-color: var(--color-fondo);
-            color: var(--color-texto);
+            color: var(--color-texto-principal);
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
             min-height: 100vh;
         }
 
-        /* --- Contenedor Principal (la tarjeta) --- */
+        /* --- Encabezado Estilo SNGRE --- */
+        .page-header {
+            background-color: var(--color-principal);
+            color: white;
+            padding: 1.25rem 2rem;
+            text-align: center;
+        }
+        
+        /* Contenedor para el logo y títulos */
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header-logo-img {
+            max-height: 60px; /* Ajusta el tamaño del logo */
+            margin-bottom: 0.75rem;
+        }
+        
+        .header-title {
+            font-size: 1.6rem; /* Título un poco más grande */
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* --- Contenedor Principal (Tarjeta Blanca) --- */
+        main {
+            flex-grow: 1; 
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
         .container {
             width: 100%;
-            max-width: 700px; /* Ancho máximo del contenedor */
+            max-width: 800px;
             background-color: var(--color-tarjeta);
             border-radius: 8px;
-            box-shadow: 0 4px 12px var(--color-sombra);
-            padding: 2.5rem; /* Espaciado interno */
-            box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
         }
 
-        h1 {
+        .card-body {
+            padding: 2.5rem;
+        }
+        
+        .card-body h2 {
             text-align: center;
-            color: var(--color-primario);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-principal); 
             margin-top: 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-body .subtitle {
+            text-align: center;
+            font-size: 1rem;
+            color: var(--color-texto-secundario);
+            margin-bottom: 2.5rem;
         }
 
-        /* --- Caja de Búsqueda (Input + Botón) --- */
-        .search-box {
-            display: flex;
-            gap: 10px; /* Espacio entre el input y el botón */
+        /* --- Formulario de Búsqueda --- */
+        .form-group {
             margin-bottom: 1.5rem;
         }
-
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
         #searchInput {
-            flex-grow: 1; /* El input toma todo el espacio disponible */
+            width: 100%;
             padding: 12px 15px;
-            font-size: 16px;
+            font-size: 1rem;
+            font-family: 'Roboto', sans-serif;
             border: 1px solid var(--color-borde);
-            border-radius: 6px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            border-radius: 4px;
+            box-sizing: border-box; 
         }
-
+        
         #searchInput:focus {
             outline: none;
-            border-color: var(--color-primario);
-            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
+            border-color: var(--color-principal);
+            box-shadow: 0 0 0 3px rgba(47, 51, 143, 0.2);
         }
-
+        
         #searchButton {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            background-color: var(--color-primario);
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-weight: 700;
             color: white;
+            background-color: var(--color-principal); 
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            transition: background-color 0.2s;
         }
-
+        
         #searchButton:hover {
-            background-color: #00418a; /* Un azul más oscuro */
+            background-color: var(--color-principal-hover); 
         }
-
-        #searchButton:active {
-            transform: scale(0.98); /* Efecto de clic */
+        
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 2rem 0;
         }
-
-        /* --- Animación de Carga (Spinner) --- */
+        
+        /* --- Resultados y Loader --- */
+        .results-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
         .loader {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--color-borde);
-            border-top: 4px solid var(--color-primario);
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--color-principal); 
             border-radius: 50%;
-            margin: 2rem auto; /* Centrado */
-            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+            animation: spin 0.8s linear infinite;
         }
         
         @keyframes spin {
@@ -105,66 +175,146 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- Contenedor de Resultados --- */
         #resultsContainer {
-            margin-top: 1.5rem;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
         }
 
-        /* --- Tarjeta para cada Resultado (se crea con JS) --- */
-        .result-card {
-            background-color: #fdfdfd;
+        .result-item {
+            font-size: 1rem;
+            padding: 12px 15px;
             border: 1px solid var(--color-borde);
             border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .result-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #000;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
         }
 
-        .result-card p {
-            margin: 5px 0;
-            color: #555;
-            line-height: 1.6;
-        }
-        
-        .result-card p strong {
-            color: #111;
-            min-width: 80px; /* Alinea los valores */
-            display: inline-block;
+        .result-item:hover {
+            background-color: #f8f9fa;
+            border-color: var(--color-principal); 
         }
 
-        /* --- Mensaje de "No encontrado" (se crea con JS) --- */
         .no-results {
             text-align: center;
-            color: #777;
-            padding: 2rem;
-            font-style: italic;
+            color: var(--color-texto-secundario);
+            padding: 1rem;
+        }
+        
+        /* --- Footer Estilo SNGRE --- */
+        .page-footer {
+            background-color: var(--color-principal);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.85rem;
+            opacity: 0.9;
         }
 
+        /* --- ESTRUCTURA DEL MODAL (Sin cambios) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(33, 37, 41, 0.6);
+            display: none; /* Oculto */
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--color-tarjeta);
+            border-radius: 8px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        #modalClose {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            font-size: 1.75rem;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        #modalClose:hover { color: #333; }
+        
+        #modalBody h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: var(--color-principal); 
+            border-bottom: 1px solid var(--color-borde);
+            padding-bottom: 0.5rem;
+        }
+        
+        #modalBody p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--color-texto-secundario);
+        }
+        
+        #modalBody p strong {
+            color: var(--color-texto-principal);
+            min-width: 90px;
+            display: inline-block;
+        }
+        
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Consulta de Participantes</h1>
-        
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Buscar por nombre, ID, email...">
-            <button id="searchButton">🔍 Buscar</button>
+    <header class="page-header">
+        <div class="header-content">
+            <img src="sngr.png" alt="Logo SNGRE" class="header-logo-img">
+            <h1 class="header-title">Secretaría Nacional de Gestión de Riesgos</h1>
+            <p class="header-subtitle">Programa "Jóvenes en Acción" | Consulta Interna</p>
         </div>
+    </header>
 
-        <hr>
+    <main>
+        <div class="container">
+            <div class="card-body">
+                <h2>Consulta de Participantes</h2>
+                <p class="subtitle">Ingrese la cédula, nombre o apellido del participante.</p>
+                
+                <div class="form-group">
+                    <label for="searchInput">Término de búsqueda:</label>
+                    <input type="text" id="searchInput" placeholder="Ej: 1234567890 o 'Ana Pérez'">
+                </div>
+                <button id="searchButton">Buscar Participante</button>
+                
+                <hr>
+                
+                <h3 class="results-header">Resultados</h3>
+                <div id="loader" class="loader" style="display: none;"></div>
+                <ul id="resultsContainer">
+                    </ul>
+            </div>
+        </div>
+    </main>
 
-        <h2>Resultados:</h2>
-        
-        <div id="loader" class="loader" style="display: none;"></div>
+    <footer class="page-footer">
+        © 2025 Secretaría Nacional de Gestión de Riesgos – Coordinación Zonal 5-8 | Uso Interno
+    </footer>
 
-        <div id="resultsContainer"></div>
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button id="modalClose" title="Cerrar">&times;</button>
+            <div id="modalBody">
+                </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
