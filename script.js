@@ -10,11 +10,11 @@ const loader = document.getElementById('loader');
 const modalOverlay = document.getElementById('modalOverlay');
 const modalBody = document.getElementById('modalBody');
 const modalClose = document.getElementById('modalClose');
-const modalTitle = document.getElementById('modalTitle'); // <-- NUEVO
+const modalTitle = document.getElementById('modalTitle'); // <--- Importante
 let currentResultsData = [];
 
 
-// --- PASO 3: LÓGICA DE BÚSQUEDA (Sin cambios) ---
+// --- PASO 3: LÓGICA DE BÚSQUEDA (No cambia) ---
 searchButton.addEventListener('click', () => {
     const query = searchInput.value.trim();
     if (query === "") {
@@ -60,34 +60,28 @@ searchButton.addEventListener('click', () => {
 });
 
 
-// --- PASO 4: LÓGICA DEL MODAL (¡ACTUALIZADA!) ---
+// --- PASO 4: LÓGICA DEL MODAL (¡LA PARTE IMPORTANTE!) ---
 
-/**
- * Abre el modal y lo llena con los datos del participante
- * @param {number} index - El índice del participante en el array 'currentResultsData'
- */
 function openModal(index) {
     const p = currentResultsData[index];
     
     // Limpiar el cuerpo del modal
     modalBody.innerHTML = '';
     
-    // --- NUEVA LÓGICA DE 2 COLUMNAS ---
-    
-    // 1. Poner el Título
+    // 1. Poner el Título en el h3
     modalTitle.textContent = `${p.nombres || ''} ${p.apellidos || ''}`.trim();
     
-    // 2. Crear las columnas
+    // 2. Crear las dos columnas
     const col1 = document.createElement('div');
     col1.className = 'modal-col-1';
     
     const col2 = document.createElement('div');
     col2.className = 'modal-col-2';
 
-    // 3. Función ayudante para crear el nuevo formato (Etiqueta arriba, valor abajo)
+    // 3. Función ayudante para el NUEVO formato (Etiqueta arriba, valor abajo)
     const crearFila = (etiqueta, valor) => {
         const div = document.createElement('div');
-        div.className = 'data-pair';
+        div.className = 'data-pair'; // <-- Usa la clase CSS
         
         const strong = document.createElement('strong');
         strong.textContent = etiqueta + ":";
@@ -113,15 +107,13 @@ function openModal(index) {
     col2.appendChild(crearFila("Ciudad", p.ciudad));
     col2.appendChild(crearFila("Parroquia", p.parroquia));
     col2.appendChild(crearFila("Dirección", p.direccion));
-    col2.appendChild(crearFila("Actividad General", p.actividades_general)); // Con la 'a' correcta
+    col2.appendChild(crearFila("Actividad General", p.actividades_general)); // Con 'a'
     col2.appendChild(crearFila("Actividad Específica", p.actividades_especificas));
     
-    // 6. Añadir las columnas al cuerpo del modal
+    // 6. Añadir las columnas al cuerpo del modal (que es el grid)
     modalBody.appendChild(col1);
     modalBody.appendChild(col2);
     
-    // --- FIN DE LA NUEVA LÓGICA ---
-
     // 7. Mostrar el modal
     modalOverlay.style.display = 'flex';
 }
@@ -130,7 +122,7 @@ function closeModal() {
     modalOverlay.style.display = 'none';
 }
 
-// --- PASO 5: EVENTOS (Sin cambios) ---
+// --- PASO 5: EVENTOS (No cambia) ---
 modalClose.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', (event) => {
     if (event.target === modalOverlay) {
