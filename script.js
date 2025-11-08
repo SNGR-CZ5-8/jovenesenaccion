@@ -4,6 +4,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyhoY_XIO7WXtr_9EI5o84U
 
 // --- DOM ---
 const searchButton = document.getElementById('searchButton');
+const clearButton  = document.getElementById('clearButton');
 const searchInput  = document.getElementById('searchInput');
 const resultsContainer = document.getElementById('resultsContainer');
 const loader = document.getElementById('loader');
@@ -20,24 +21,46 @@ let currentResultsData = [];
 let lastFocusedElement = null;
 
 // Helpers
-const qs = (sel, ctx=document) => ctx.querySelector(sel);
+const qs  = (sel, ctx=document) => ctx.querySelector(sel);
 const qsa = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
-const safe = (v) => (v ?? '').toString().trim() || 'N/A';
+const safe = (v) => (v ?? '').toString().trim();
 
 function currentCriterion(){
   return (qs('input[name="crit"]:checked')?.value) || 'cedula';
 }
-
 function placeholderByCriterion(){
   const c = currentCriterion();
   if (c === 'apellidos') return "Ej.: 'Quilumba'";
   if (c === 'nombres')   return "Ej.: 'Karoly'";
   return "Ej.: 1753631652";
 }
+function initialsFrom(nombres, apellidos){
+  const A = safe(apellidos).split(' ')[0]?.[0] || '';
+  const N = safe(nombres).split(' ')[0]?.[0] || '';
+  const ii = (N + A).toUpperCase().slice(0,2);
+  return ii || 'SN';
+}
+function highlight(text, term){
+  const v = safe(text);
+  if (!v || !term) return v;
+  const t = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${t})`, 'ig');
+  return v.replace(re, '<mark>$1</mark>');
+}
 
+// Restringe caracteres si es cédula (solo dígitos)
+function enforceCedulaMask(){
+  if (currentCriterion() === 'cedula'){
+    const digits = searchInput.value.replace(/\D+/g,'');
+    if (searchInput.value !== digits) searchInput.value = digits;
+  }
+}
+
+// React al cambio de criterio
 qsa('input[name="crit"]').forEach(r=>{
   r.addEventListener('change', ()=>{
     searchInput.placeholder = placeholderByCriterion();
+    enforceCedulaMask();
     searchInput.focus();
   });
 });
@@ -45,8 +68,8 @@ searchInput.placeholder = placeholderByCriterion();
 
 // Buscar
 function performSearch(){
-  const query = searchInput.value.trim();
   const criterio = currentCriterion();
+  let query = safe(searchInput.value);
 
   if (!query){
     alert("Escribe un término de búsqueda.");
@@ -54,12 +77,22 @@ function performSearch(){
     return;
   }
 
+  // Normaliza query según criterio
+  if (criterio === 'cedula'){
+    query = query.replace(/\D+/g,''); // solo dígitos
+    if (!query){
+      alert("Para cédula, ingresa solo números.");
+      searchInput.focus();
+      return;
+    }
+  } else {
+    query = query.toLowerCase();
+  }
+
   loader.style.display = 'block';
   resultsContainer.innerHTML = '';
   currentResultsData = [];
 
-  // Nota: mantenemos el parámetro original "buscar" para no romper tu backend.
-  // Enviamos además "criterio" por si tu App Script lo aprovecha.
   const url = `${API_URL}?buscar=${encodeURIComponent(query)}&criterio=${encodeURIComponent(criterio)}`;
 
   fetch(url)
@@ -71,13 +104,17 @@ function performSearch(){
         showNoResults(data?.error ? `Error: ${data.error}` : 'Respuesta vacía de la API.');
         return;
       }
-      if (!Array.isArray(data) || data.length === 0){
-        showNoResults(`No se encontraron resultados para "${query}".`);
+
+      // FILTRO ESTRICTO EN EL CLIENTE SEGÚN CRITERIO
+      const filtered = (Array.isArray(data) ? data : []).filter(p => matchesCriterion(p, criterio, query));
+
+      if (filtered.length === 0){
+        showNoResults(`No se encontraron resultados para "${safe(searchInput.value)}" con criterio "${criterio}".`);
         return;
       }
 
-      currentResultsData = data;
-      renderResults(data, query);
+      currentResultsData = filtered;
+      renderResults(filtered, safe(searchInput.value));
     })
     .catch(err=>{
       console.error('Error en fetch:', err);
@@ -86,28 +123,32 @@ function performSearch(){
     });
 }
 
+function matchesCriterion(p, criterio, q){
+  const ap = safe(p.apellidos).toLowerCase();
+  const no = safe(p.nombres).toLowerCase();
+  const ce = safe(p.cedula);
+
+  if (criterio === 'cedula'){
+    // coincide si contiene la secuencia numérica
+    return ce.includes(q);
+  }
+  if (criterio === 'apellidos'){
+    return ap.includes(q);
+  }
+  if (criterio === 'nombres'){
+    return no.includes(q);
+  }
+  return false;
+}
+
 function showNoResults(msg){
   resultsContainer.innerHTML = `<li class="no-results">${msg}</li>`;
-}
-
-function initialsFrom(nombres, apellidos){
-  const A = safe(apellidos).split(' ')[0]?.[0] || '';
-  const N = safe(nombres).split(' ')[0]?.[0] || '';
-  const ii = (N + A).toUpperCase().slice(0,2);
-  return ii || 'SN';
-}
-
-function highlight(text, term){
-  if (!text || !term) return safe(text);
-  const t = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(${t})`, 'ig');
-  return safe(text).replace(re, '<mark>$1</mark>');
 }
 
 function renderResults(list, needle){
   resultsContainer.innerHTML = '';
   list.forEach((p, idx)=>{
-    const nombre = `${safe(p.nombres)} ${safe(p.apellidos)}`.trim();
+    const nombre = `${safe(p.nombres)} ${safe(p.apellidos)}`.trim() || '(Sin nombre)';
     const cedula = safe(p.cedula);
     const provincia = safe(p.provincia);
     const ciudad = safe(p.ciudad);
@@ -116,13 +157,13 @@ function renderResults(list, needle){
     li.className = 'item';
     li.tabIndex = 0;
     li.setAttribute('role','button');
-    li.setAttribute('aria-label', `Abrir detalle de ${nombre || 'participante'}`);
+    li.setAttribute('aria-label', `Abrir detalle de ${nombre}`);
 
     li.innerHTML = `
       <div class="i-main">
         <div class="avatar">${initialsFrom(p.nombres, p.apellidos)}</div>
         <div class="i-text">
-          <div class="i-name">${highlight(nombre || '(Sin nombre)', needle)}</div>
+          <div class="i-name">${highlight(nombre, needle)}</div>
           <div class="i-sub">Cédula: ${highlight(cedula, needle)}</div>
           <div class="i-sub">${[provincia, ciudad].filter(Boolean).join(' · ')}</div>
         </div>
@@ -154,7 +195,7 @@ function openModal(index, originEl=null){
   const pair = (label, value) => {
     const d = document.createElement('div');
     d.className = 'pair';
-    d.innerHTML = `<strong>${label}</strong><span>${safe(value)}</span>`;
+    d.innerHTML = `<strong>${label}</strong><span>${safe(value) || 'N/A'}</span>`;
     return d;
   };
 
@@ -177,12 +218,9 @@ function openModal(index, originEl=null){
   modalBody.appendChild(col1);
   modalBody.appendChild(col2);
 
-  // Mostrar
   modalOverlay.classList.add('show');
-  // Enfocar el botón cerrar para accesibilidad
   modalClose.focus();
 
-  // Trap de foco simple
   document.addEventListener('keydown', handleModalKeys);
   modalOverlay.addEventListener('click', clickOutsideToClose);
 }
@@ -191,8 +229,6 @@ function closeModal(){
   modalOverlay.classList.remove('show');
   document.removeEventListener('keydown', handleModalKeys);
   modalOverlay.removeEventListener('click', clickOutsideToClose);
-
-  // devolver el foco
   if (lastFocusedElement && typeof lastFocusedElement.focus === 'function'){
     lastFocusedElement.focus();
   }
@@ -203,16 +239,23 @@ function handleModalKeys(e){
 }
 
 function clickOutsideToClose(e){
-  // cierra si se hace click fuera del panel
   if (e.target === modalOverlay){ closeModal(); }
 }
 
 // Eventos
 searchButton.addEventListener('click', performSearch);
 searchInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ performSearch(); }});
+searchInput.addEventListener('input', enforceCedulaMask);
+
+clearButton.addEventListener('click', ()=>{
+  // Reset a estado inicial
+  qs('#crit-cedula').checked = true;
+  searchInput.value = '';
+  searchInput.placeholder = placeholderByCriterion();
+  resultsContainer.innerHTML = '';
+  helperText.textContent = 'Presiona Enter para buscar rápidamente.';
+  searchInput.focus();
+});
+
 modalClose.addEventListener('click', closeModal);
 modalClose2.addEventListener('click', closeModal);
-
-// Hint dinámico
-searchInput.addEventListener('focus', ()=> helperText.textContent = 'Presiona Enter para buscar rápidamente.');
-searchInput.addEventListener('blur',  ()=> helperText.textContent = 'Presiona Enter para buscar rápidamente.');
